@@ -12,21 +12,20 @@ object Question5 extends SparkEnv{
     data.filter(s"date >= to_date('$fromDate','yyyy-MM-dd') AND date <= to_date('$toDate','yyyy-MM-dd') ")
   }
 
-  var data  = filterDataByDate(flightData,"2017-01-02","2017-05-30")
-  var joinColumn = Seq("flightId", "from", "to", "date")
+  val data  = filterDataByDate(flightData,"2017-01-02","2017-05-30")
+  val joinColumn = Seq("flightId", "from", "to", "date")
   val rows = "3"
 
-  data = data.as("a").join(data.as("b"), joinColumn)
+  val enrichData = data.as("a").join(data.as("b"), joinColumn)
     .where(col("a.passengerId").<(col("b.passengerId")))
     .select(col("b.passengerId").as("pass_1"), col("a.*"))
-
-  data = data.withColumnRenamed("passengerId", "pass_2")
+    .withColumnRenamed("passengerId", "pass_2")
     .groupBy("pass_1", "pass_2")
     .agg(count(lit(1)).as("numOfFlights"), functions.min("date").as("From"), functions.max("date").as("To"))
     .filter(s"numOfFlights > $rows")
     .orderBy(col("numOfFlights").desc)
 
-  data.show(false)
-  saveAsCsv(data,"src/main/resources/passengerTravelTogatherByDate")
+  enrichData.show(false)
+  saveAsCsv(enrichData,"src/main/resources/passengerTravelTogatherByDate")
 
 }
