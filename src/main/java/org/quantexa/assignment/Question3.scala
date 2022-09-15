@@ -38,7 +38,7 @@ object Question3 extends SparkEnv{
   })
 
   val spec = Window.partitionBy("passengerId").orderBy(col("date").asc)
-  var data = flightData.withColumn("rn", row_number().over(spec))
+  val data = flightData.withColumn("rn", row_number().over(spec))
     .groupBy("passengerId")
     .agg(collect_list("from").as("from_list"))
     .withColumn("maxTrip", maxTrip(col("from_list"), lit(skipCountry)))
